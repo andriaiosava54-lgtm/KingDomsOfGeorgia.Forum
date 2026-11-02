@@ -11,8 +11,6 @@
             --border-color: rgba(255, 26, 64, 0.3);
             --primary-glow: #ff1a40;
             --primary-gradient: linear-gradient(135deg, #ff1a40, #800014);
-            --owner-gold: #ffd700;
-            --admin-blue: #00d2ff;
             --text-main: #f1f5f9;
             --text-muted: #94a3b8;
             --font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
@@ -135,7 +133,6 @@
             margin-bottom: 15px;
             transition: all 0.3s ease;
         }
-
         .thread-card:hover {
             border-color: var(--primary-glow);
             box-shadow: 0 0 20px rgba(255, 26, 64, 0.4);
@@ -160,12 +157,12 @@
 
         .modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px);
-            justify-content: center; align-items: center; z-index: 1000;
+            background: rgba(0, 0, 0, 0.9); backdrop-filter: blur(8px);
+            justify-content: center; align-items: center; z-index: 2000;
         }
         .modal-content {
             background: #0f0a14; border: 1px solid var(--primary-glow);
-            padding: 30px; border-radius: 16px; width: 100%; max-width: 520px;
+            padding: 30px; border-radius: 16px; width: 100%; max-width: 450px;
             box-shadow: 0 0 40px rgba(255, 26, 64, 0.5);
         }
 
@@ -178,16 +175,26 @@
 </head>
 <body>
 
+    <!-- ავტორიზაციის ფანჯარა -->
+    <div class="modal" id="authModal" style="display: flex;">
+        <div class="modal-content">
+            <h3 style="color: #fff; margin-bottom: 20px; text-align: center;">⚔️ KingDomsOfGeorgia // შესვლა</h3>
+            <div style="margin-bottom: 15px;">
+                <label style="color: var(--text-muted); font-size: 13px;">მომხმარებლის სახელი (Nickname):</label>
+                <input type="text" id="authUsername" placeholder="შეიყვანე შენი ნიკი..." style="width: 100%; padding: 12px; background: #000; border: 1px solid var(--border-color); color: #fff; border-radius: 8px; margin-top: 5px;">
+            </div>
+            <button class="btn" style="width: 100%; padding: 12px;" onclick="handleAuth()">შესვლა ფორუმზე</button>
+        </div>
+    </div>
+
     <div class="container">
         <header>
             <div class="logo">KINGDOMS OF <span>GEORGIA</span></div>
-            <div class="user-panel" id="userHeaderPanel">
-                <!-- Dynamic Header via JS -->
-            </div>
+            <div class="user-panel" id="userHeaderPanel"></div>
         </header>
 
         <div class="forum-grid">
-            <!-- Navigation -->
+            <!-- ნავიგაციის მენიუ -->
             <div class="sidebar-menu">
                 <div class="menu-title">📌 კატეგორიები</div>
                 <div class="category-item active" onclick="selectCategory('all', this)">🌐 ყველა თემა</div>
@@ -199,16 +206,16 @@
                 <div class="category-item" onclick="selectCategory('buy', this)">💰 ყიდვა</div>
             </div>
 
-            <!-- Content Area -->
+            <!-- მთავარი შიგთავსი -->
             <div class="main-content">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <div class="section-title" id="currentCategoryTitle" style="border: none; margin: 0;">🌐 ყველა თემა</div>
-                    <button class="btn" onclick="openNewThreadModal()">+ ახალი თემა</button>
+                    <button class="btn" id="newThreadBtn" onclick="openNewThreadModal()">+ ახალი თემა</button>
                 </div>
                 <div id="threadContainer"></div>
             </div>
 
-            <!-- Profile Sidebar -->
+            <!-- პროფილის ვიჯეტი -->
             <div class="sidebar-right">
                 <div class="widget">
                     <h4>👑 ჩემი პროფილი</h4>
@@ -218,218 +225,8 @@
         </div>
     </div>
 
-    <!-- Admin Panel Modal -->
+    <!-- ადმინ პანელის ფანჯარა -->
     <div class="modal" id="adminModal">
-        <div class="modal-content">
+        <div class="modal-content" style="max-width: 550px;">
             <h3 style="color: #ffd700; margin-bottom: 15px;">👑 ადმინ პანელი — როლების მართვა</h3>
-            <div id="userListContainer"></div>
-            <div style="margin-top: 20px; text-align: right;">
-                <button class="btn" onclick="closeAdminModal()">დახურვა</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- New Thread Modal -->
-    <div class="modal" id="threadModal">
-        <div class="modal-content">
-            <h3 style="color: #fff; margin-bottom: 15px;">შექმენი ახალი თემა</h3>
-            <div style="margin-bottom: 12px;">
-                <label style="color: #94a3b8; font-size: 13px;">აირჩიე კატეგორია:</label>
-                <select id="newThreadCategory" style="width: 100%; padding: 10px; background: #000; border: 1px solid var(--border-color); color: #fff; border-radius: 8px; margin-top: 5px;">
-                    <option value="chat">💬 ზოგადი ჩათი</option>
-                    <option value="reports">⚔️ საჩივრები</option>
-                    <option value="sell">🛒 გაყიდვა</option>
-                    <option value="buy">💰 ყიდვა</option>
-                </select>
-            </div>
-            <div style="margin-bottom: 12px;">
-                <input type="text" id="newThreadTitle" placeholder="თემის სათაური..." style="width: 100%; padding: 12px; background: #000; border: 1px solid var(--border-color); color: #fff; border-radius: 8px;">
-            </div>
-            <div style="margin-bottom: 15px;">
-                <textarea id="newThreadContent" rows="5" placeholder="დაწერე ტექსტი..." style="width: 100%; padding: 12px; background: #000; border: 1px solid var(--border-color); color: #fff; border-radius: 8px;"></textarea>
-            </div>
-            <div style="display: flex; justify-content: flex-end; gap: 10px;">
-                <button class="btn" style="background: transparent; border: 1px solid #fff;" onclick="closeNewThreadModal()">გაუქმება</button>
-                <button class="btn" onclick="publishThread()">გამოქვეყნება</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // Default Logged In User set to Suspecttt with OWNER Role
-        let currentUser = { username: "Suspecttt", role: "Owner" };
-
-        let users = [
-            { username: "Suspecttt", role: "Owner" },
-            { username: "KingAdmin", role: "Admin" },
-            { username: "Player_1", role: "Member" }
-        ];
-
-        let threads = [
-            {
-                id: 1,
-                author: "Suspecttt",
-                role: "Owner",
-                category: "chat",
-                title: "👑 KingDomsOfGeorgia-ს ოფიციალური ფორუმი გახსნილია!",
-                content: "მოგესალმებით ყველას! სამეფოს მთავარი ჰაბი მზადაა. დაიცავით წესები და ისიამოვნეთ.",
-                status: null
-            },
-            {
-                id: 2,
-                author: "Player_1",
-                role: "Member",
-                category: "reports",
-                title: "⚔️ საჩივარი მოთამაშეზე TestUser",
-                content: "1. ჩემი ნიკი: Player_1\n2. დამრღვევის ნიკი: TestUser\n3. მიზეზი: წესების დარღვევა",
-                status: "pending"
-            }
-        ];
-
-        let activeCategory = "all";
-
-        function renderHeader() {
-            const panel = document.getElementById('userHeaderPanel');
-            let badgeClass = currentUser.role === "Owner" ? "role-owner" : "role-member";
-            let adminBtn = (currentUser.role === "Owner" || currentUser.role === "Admin") 
-                ? `<button class="btn btn-admin" onclick="openAdminModal()">👑 ადმინ პანელი</button>` : '';
-
-            panel.innerHTML = `
-                <span>👑 <b>${currentUser.username}</b> <span class="role-badge ${badgeClass}">${currentUser.role}</span></span>
-                ${adminBtn}
-            `;
-        }
-
-        function renderProfileWidget() {
-            const widget = document.getElementById('profileWidgetContent');
-            let badgeClass = currentUser.role === "Owner" ? "role-owner" : "role-member";
-            widget.innerHTML = `
-                <p style="margin-bottom: 8px;">სახელი: <b>${currentUser.username}</b></p>
-                <p style="margin-bottom: 15px;">რანგი: <span class="role-badge ${badgeClass}">${currentUser.role}</span></p>
-                ${currentUser.role === "Owner" ? '<p style="color: #ffd700; font-size: 13px;">✔ შენ გაქვს ფორუმის სრული მართვის უფლება!</p>' : ''}
-            `;
-        }
-
-        function renderThreads() {
-            const container = document.getElementById('threadContainer');
-            container.innerHTML = '';
-
-            let filtered = activeCategory === 'all' 
-                ? threads 
-                : threads.filter(t => t.category === activeCategory);
-
-            if (filtered.length === 0) {
-                container.innerHTML = '<div style="color: #94a3b8; text-align: center; padding: 40px;">ამ კატეგორიაში თემები ჯერ არ არის.</div>';
-                return;
-            }
-
-            filtered.forEach(thread => {
-                let badgeClass = thread.role === "Owner" ? "role-owner" : (thread.role === "Admin" ? "role-admin" : "role-member");
-                
-                let ownerButtons = '';
-                if ((currentUser.role === "Owner" || currentUser.role === "Admin") && thread.category === "reports" && thread.status === "pending") {
-                    ownerButtons = `
-                        <div class="owner-actions">
-                            <button class="btn-approve" onclick="reviewReport(${thread.id}, 'approved')">✅ დადასტურება</button>
-                            <button class="btn-reject" onclick="reviewReport(${thread.id}, 'rejected')">❌ უარყოფა</button>
-                        </div>
-                    `;
-                }
-
-                container.innerHTML += `
-                    <div class="thread-card">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                            <h3 style="color: #fff;">${thread.title}</h3>
-                            <span class="role-badge ${badgeClass}">${thread.role} // ${thread.author}</span>
-                        </div>
-                        <p style="color: #cbd5e1; font-size: 14px; white-space: pre-line;">${thread.content}</p>
-                        ${ownerButtons}
-                    </div>
-                `;
-            });
-        }
-
-        function selectCategory(cat, el) {
-            activeCategory = cat;
-            document.querySelectorAll('.category-item').forEach(i => i.classList.remove('active'));
-            el.classList.add('active');
-            document.getElementById('currentCategoryTitle').innerText = el.innerText;
-            renderThreads();
-        }
-
-        function reviewReport(threadId, decision) {
-            let thread = threads.find(t => t.id === threadId);
-            if (thread) {
-                thread.category = decision;
-                thread.status = decision;
-                alert(decision === 'approved' ? '✅ საჩივარი დადასტურდა!' : '❌ საჩივარი უარყოფილია!');
-                renderThreads();
-            }
-        }
-
-        function openAdminModal() {
-            const list = document.getElementById('userListContainer');
-            list.innerHTML = '';
-            users.forEach(u => {
-                list.innerHTML += `
-                    <div class="admin-user-row">
-                        <span style="color: white; font-weight: 700;">${u.username}</span>
-                        <select class="role-select" onchange="changeUserRole('${u.username}', this.value)">
-                            <option value="Member" ${u.role === 'Member' ? 'selected' : ''}>Member</option>
-                            <option value="Admin" ${u.role === 'Admin' ? 'selected' : ''}>Admin</option>
-                            <option value="Owner" ${u.role === 'Owner' ? 'selected' : ''}>Owner</option>
-                        </select>
-                    </div>
-                `;
-            });
-            document.getElementById('adminModal').style.display = 'flex';
-        }
-
-        function closeAdminModal() { document.getElementById('adminModal').style.display = 'none'; }
-
-        function changeUserRole(username, newRole) {
-            let user = users.find(u => u.username === username);
-            if (user) {
-                user.role = newRole;
-                if (username === currentUser.username) {
-                    currentUser.role = newRole;
-                    renderHeader();
-                    renderProfileWidget();
-                }
-                alert(`${username}-ის როლი შეიცვალა: ${newRole}`);
-            }
-        }
-
-        function openNewThreadModal() { document.getElementById('threadModal').style.display = 'flex'; }
-        function closeNewThreadModal() { document.getElementById('threadModal').style.display = 'none'; }
-
-        function publishThread() {
-            let title = document.getElementById('newThreadTitle').value;
-            let content = document.getElementById('newThreadContent').value;
-            let category = document.getElementById('newThreadCategory').value;
-
-            if (!title || !content) return alert('გთხოვთ შეავსოთ ყველა ველი!');
-
-            threads.unshift({
-                id: Date.now(),
-                author: currentUser.username,
-                role: currentUser.role,
-                category: category,
-                title: title,
-                content: content,
-                status: category === 'reports' ? 'pending' : null
-            });
-
-            closeNewThreadModal();
-            document.getElementById('newThreadTitle').value = '';
-            document.getElementById('newThreadContent').value = '';
-            renderThreads();
-        }
-
-        // Initialize App
-        renderHeader();
-        renderProfileWidget();
-        renderThreads();
-    </script>
-</body>
-</html>
+            <div id="
